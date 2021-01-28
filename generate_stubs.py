@@ -98,9 +98,10 @@ def main():
     parser.add_argument('--no-write', help="""Print what it would do but don't
     write any files""", action='store_false', dest='write')
     parser.add_argument('--quiet', help="""Don't print any output to the terminal""", action='store_true', dest='quiet')
+    parser.add_argument('--output', help="""Output path of the stubs""", dest='out_path', default='array_api_tests')
     args = parser.parse_args()
 
-    types_path = os.path.join('array_api_tests', 'function_stubs', '_types.py')
+    types_path = os.path.join(args.out_path, 'function_stubs', '_types.py')
     if args.write:
         with open(types_path, 'w') as f:
             f.write(TYPES_HEADER)
@@ -121,7 +122,7 @@ def main():
         if not args.write:
             continue
         py_file = filename.replace('.md', '.py')
-        py_path = os.path.join('array_api_tests', 'function_stubs', py_file)
+        py_path = os.path.join(args.out_path, 'function_stubs', py_file)
         title = filename.replace('.md', '').replace('_', ' ')
         module_name = py_file.replace('.py', '')
         modules[module_name] = []
@@ -175,7 +176,7 @@ def {annotated_sig}:{doc}
         if filename == 'elementwise_functions.md':
             special_cases = parse_special_cases(text, verbose=not args.quiet)
             for func in special_cases:
-                py_path = os.path.join('array_api_tests', 'special_cases', f'test_{func}.py')
+                py_path = os.path.join(args.out_path, 'special_cases', f'test_{func}.py')
                 tests = []
                 for typ in special_cases[func]:
                     multiple = len(special_cases[func][typ]) > 1
@@ -200,7 +201,7 @@ def {annotated_sig}:{doc}
                         with open(py_path, 'w') as f:
                             f.write(code)
 
-    init_path = os.path.join('array_api_tests', 'function_stubs', '__init__.py')
+    init_path = os.path.join(args.out_path, 'function_stubs', '__init__.py')
     if args.write:
         with open(init_path, 'w') as f:
             f.write(INIT_HEADER)
