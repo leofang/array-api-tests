@@ -101,7 +101,17 @@ def main():
     parser.add_argument('--output', help="""Output path of the stubs""", dest='out_path', default='array_api_tests')
     args = parser.parse_args()
 
-    types_path = os.path.join(args.out_path, 'function_stubs', '_types.py')
+    if args.out_path == 'array_api_tests':
+        stubs_dir = os.path.join(args.out_path, 'function_stubs')
+    else:
+        # flatten the directory structure as we don't output tests for special cases
+        stubs_dir = args.out_path
+        os.makedirs(stubs_dir, exist_ok=True)
+        # workaround
+        import shutil
+        shutil.copy('./array_api_tests/function_stubs/constants.py', os.path.join(stubs_dir, 'constants.py'))
+
+    types_path = os.path.join(stubs_dir, '_types.py')
     if args.write:
         with open(types_path, 'w') as f:
             f.write(TYPES_HEADER)
@@ -122,7 +132,7 @@ def main():
         if not args.write:
             continue
         py_file = filename.replace('.md', '.py')
-        py_path = os.path.join(args.out_path, 'function_stubs', py_file)
+        py_path = os.path.join(stubs_dir, py_file)
         title = filename.replace('.md', '').replace('_', ' ')
         module_name = py_file.replace('.py', '')
         modules[module_name] = []
@@ -173,7 +183,7 @@ def {annotated_sig}:{doc}
         code = fix_code(code, file=py_path, verbose=False, quiet=False)
         with open(py_path, 'w') as f:
             f.write(code)
-        if filename == 'elementwise_functions.md':
+        if filename == 'elementwise_functions.md' and args.out_path == 'array_api_tests':
             special_cases = parse_special_cases(text, verbose=not args.quiet)
             for func in special_cases:
                 py_path = os.path.join(args.out_path, 'special_cases', f'test_{func}.py')
@@ -201,7 +211,7 @@ def {annotated_sig}:{doc}
                         with open(py_path, 'w') as f:
                             f.write(code)
 
-    init_path = os.path.join(args.out_path, 'function_stubs', '__init__.py')
+    init_path = os.path.join(stubs_dir, '__init__.py')
     if args.write:
         with open(init_path, 'w') as f:
             f.write(INIT_HEADER)
